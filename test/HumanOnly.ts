@@ -1,17 +1,35 @@
 import { expect } from "chai";
 import { Contract } from "ethers";
 import { ethers } from "hardhat";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { tronSign } from "./tronUtils";
+import { Signer } from "./types";
 
 describe("HumanOnly", async function () {
   let humanOnlyMock: Contract;
+  let sender: Signer;
+  let validator: Signer;
+  let someone: Signer;
   let validBasicProof: string;
   let invalidBasicProof: string;
   let validSovereignProof: string;
   let invalidSovereignProof: string;
 
   before(async function () {
-    const [sender, validator, someone] = await ethers.getSigners();
+    sender = {
+      privateKey:
+        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    };
+    validator = {
+      privateKey:
+        "0x28376b117a7e6f7070a7a69cb7c7a2f583da0700d7240bffbc2ca724e787a5fa",
+      address: "0x27fB77993FEe0c8c49685Ee98c0c9030017cC223",
+    };
+    someone = {
+      privateKey:
+        "0x6b337d495469fd625fd76fb9cb2f73faee65c502d369f61aba5ec7e680293492",
+      address: "0xd422e8b828A82936F82c49753074E10f2b5C8011",
+    };
 
     const randomChallenge =
       "0xef9990adc264ccc6e55bd0cfbf8dbef5177760273ee5aa3f65aae4bbb014750f";
@@ -121,10 +139,8 @@ describe("HumanOnly", async function () {
       "0x0000000000000000000000000000000000000000"
     );
 
-    const validatorAddress = (await ethers.getSigners())[1].address;
-
     await humanOnlyMock.setHumanityValidator(emptyAddress);
-    await humanOnlyMock.setHumanityValidator(validatorAddress);
+    await humanOnlyMock.setHumanityValidator(validator.address);
 
     const actionCall = await humanOnlyMock.testBasicPoH(validBasicProof);
     await expect(actionCall).to.emit(humanOnlyMock, "Success");
@@ -134,14 +150,14 @@ describe("HumanOnly", async function () {
 async function generateBasicProof(
   randomChallenge: string,
   timestamp: string,
-  validator: SignerWithAddress
+  validator: Signer
 ) {
   const hash = ethers.utils.keccak256(
     ethers.utils.hexConcat([randomChallenge, timestamp])
   );
-  const validatorSignature = await validator.signMessage(
-    ethers.utils.arrayify(hash)
-  );
+
+  const validatorSignature = tronSign(hash, validator.privateKey);
+
   const proof = ethers.utils.hexConcat([
     randomChallenge,
     timestamp,
@@ -153,18 +169,16 @@ async function generateBasicProof(
 async function generateSovereignProof(
   randomChallenge: string,
   timestamp: string,
-  sender: SignerWithAddress,
-  validator: SignerWithAddress
+  sender: Signer,
+  validator: Signer
 ) {
-  const senderSignature = await sender.signMessage(
-    ethers.utils.arrayify(randomChallenge)
-  );
+  const senderSignature = tronSign(randomChallenge, sender.privateKey);
+
   const hash = ethers.utils.keccak256(
     ethers.utils.hexConcat([randomChallenge, senderSignature, timestamp])
   );
-  const validatorSignature = await validator.signMessage(
-    ethers.utils.arrayify(hash)
-  );
+  const validatorSignature = tronSign(hash, validator.privateKey);
+
   const proof = ethers.utils.hexConcat([
     randomChallenge,
     senderSignature,

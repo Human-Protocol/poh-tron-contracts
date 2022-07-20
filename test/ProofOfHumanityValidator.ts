@@ -1,18 +1,28 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { Contract } from "ethers";
 import { ethers } from "hardhat";
+import { tronSign } from "./tronUtils";
+import { Signer } from "./types";
 
 describe("ProofofHumanityValidator", async function () {
   let proofOfHumanityValidatorMock: Contract;
 
-  let sender: SignerWithAddress;
-  let validator: SignerWithAddress;
+  let sender: Signer;
+  let validator: Signer;
   let randomChallenge: string;
   let timestamp: string;
 
   before(async function () {
-    [sender, validator] = await ethers.getSigners();
+    sender = {
+      privateKey:
+        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    };
+    validator = {
+      privateKey:
+        "0x28376b117a7e6f7070a7a69cb7c7a2f583da0700d7240bffbc2ca724e787a5fa",
+      address: "0x27fB77993FEe0c8c49685Ee98c0c9030017cC223",
+    };
 
     randomChallenge =
       "0xef9990adc264ccc6e55bd0cfbf8dbef5177760273ee5aa3f65aae4bbb014750f";
@@ -32,9 +42,7 @@ describe("ProofofHumanityValidator", async function () {
     const hash = ethers.utils.keccak256(
       ethers.utils.hexConcat([randomChallenge, timestamp])
     );
-    const validatorSignature = await validator.signMessage(
-      ethers.utils.arrayify(hash)
-    );
+    const validatorSignature = tronSign(hash, validator.privateKey);
 
     const proof = ethers.utils.hexConcat([
       randomChallenge,
@@ -52,16 +60,12 @@ describe("ProofofHumanityValidator", async function () {
   });
 
   it("Should successfully validate a valid sovereign PoH", async function () {
-    const senderSignature = await sender.signMessage(
-      ethers.utils.arrayify(randomChallenge)
-    );
+    const senderSignature = tronSign(randomChallenge, sender.privateKey);
 
     const hash = ethers.utils.keccak256(
       ethers.utils.hexConcat([randomChallenge, senderSignature, timestamp])
     );
-    const validatorSignature = await validator.signMessage(
-      ethers.utils.arrayify(hash)
-    );
+    const validatorSignature = tronSign(hash, validator.privateKey);
 
     const proof = ethers.utils.hexConcat([
       randomChallenge,
@@ -83,9 +87,7 @@ describe("ProofofHumanityValidator", async function () {
     const hash = ethers.utils.keccak256(
       ethers.utils.hexConcat([randomChallenge, timestamp])
     );
-    const validatorSignature = await validator.signMessage(
-      ethers.utils.arrayify(hash)
-    );
+    const validatorSignature = tronSign(hash, validator.privateKey);
 
     const proof = ethers.utils.hexConcat([
       randomChallenge,
@@ -103,16 +105,12 @@ describe("ProofofHumanityValidator", async function () {
   });
 
   it("Should successfully split a valid sovereign PoH", async function () {
-    const senderSignature = await sender.signMessage(
-      ethers.utils.arrayify(randomChallenge)
-    );
+    const senderSignature = tronSign(randomChallenge, sender.privateKey);
 
     const hash = ethers.utils.keccak256(
       ethers.utils.hexConcat([randomChallenge, timestamp])
     );
-    const validatorSignature = await validator.signMessage(
-      ethers.utils.arrayify(hash)
-    );
+    const validatorSignature = tronSign(hash, validator.privateKey);
 
     const proof = ethers.utils.hexConcat([
       randomChallenge,

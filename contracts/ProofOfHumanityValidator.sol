@@ -52,9 +52,9 @@ abstract contract ProofOfHumanityValidator {
             bytes memory validatorSignature
         ) = _splitBasicPoH(proof);
 
-        address recoveredValidator = keccak256(
-            abi.encodePacked(randomChallenge, timestamp)
-        ).toEthSignedMessageHash().recover(validatorSignature);
+        address recoveredValidator = _toTronSignedMessageHash(
+            keccak256(abi.encodePacked(randomChallenge, timestamp))
+        ).recover(validatorSignature);
 
         return validator == recoveredValidator;
     }
@@ -83,13 +83,14 @@ abstract contract ProofOfHumanityValidator {
             bytes memory validatorSignature
         ) = _splitSovereignPoH(proof);
 
-        address recoveredSender = randomChallenge
-            .toEthSignedMessageHash()
+        address recoveredSender = _toTronSignedMessageHash(randomChallenge)
             .recover(senderSignature);
 
-        address recoveredValidator = keccak256(
-            abi.encodePacked(randomChallenge, senderSignature, timestamp)
-        ).toEthSignedMessageHash().recover(validatorSignature);
+        address recoveredValidator = _toTronSignedMessageHash(
+            keccak256(
+                abi.encodePacked(randomChallenge, senderSignature, timestamp)
+            )
+        ).recover(validatorSignature);
 
         return msg.sender == recoveredSender && validator == recoveredValidator;
     }
@@ -155,6 +156,15 @@ abstract contract ProofOfHumanityValidator {
             timestamp,
             validatorSignature
         );
+    }
+
+    function _toTronSignedMessageHash(bytes32 s)
+        internal
+        pure
+        virtual
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked("\x19TRON Signed Message:\n32", s));
     }
 
     function _throwError(ProofOfHumanityValidatorError error) private pure {

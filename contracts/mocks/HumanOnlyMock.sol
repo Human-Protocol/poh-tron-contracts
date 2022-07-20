@@ -7,7 +7,7 @@ contract HumanOnlyMock is HumanOnly {
     event Success();
 
     constructor() {
-        setHumanityValidator(0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
+        setHumanityValidator(0x27fB77993FEe0c8c49685Ee98c0c9030017cC223);
     }
 
     function testBasicPoH(bytes calldata proof) public basicPoH(proof) {
