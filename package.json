@@ -21,12 +21,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bakoushin/poh-tron-contracts.git"
+    "url": "https://github.com/Human-Protocol/poh-tron-contracts.git"
   },
   "bugs": {
-    "url": "https://github.com/bakoushin/poh-tron-contracts/issues"
+    "url": "https://github.com/Human-Protocol/poh-tron-contracts/issues"
   },
-  "homepage": "https://github.com/bakoushin/poh-tron-contracts#readme",
+  "homepage": "https://github.com/Human-Protocol/poh-tron-contracts#readme",
   "files": [
     "contracts/*.sol",
     "/artifacts/contracts/*.json",
